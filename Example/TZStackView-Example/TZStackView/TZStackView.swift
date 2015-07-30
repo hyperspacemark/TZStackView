@@ -454,9 +454,7 @@ public class TZStackView: UIView {
             case .Trailing, .Bottom:
                 constraints += equalAttributes(views: views, attribute: .Bottom)
             case .FirstBaseline:
-                if #available(iOS 8.0, *) {
-                    constraints += equalAttributes(views: views, attribute: .FirstBaseline)
-                }
+                constraints += equalAttributes(views: views, attribute: .FirstBaseline)
             }
             
         case .Vertical:
@@ -501,15 +499,13 @@ public class TZStackView: UIView {
                 aligned = true
             }
 
-            if #available(iOS 8.0, *) {
-                if !aligned && alignment == .FirstBaseline {
-                    switch axis {
-                    case .Horizontal:
-                        bottomView = spacerViews[0]
-                    case .Vertical:
-                        topView = spacerViews[0]
-                        bottomView = spacerViews[0]
-                    }
+            if !aligned && alignment == .FirstBaseline {
+                switch axis {
+                case .Horizontal:
+                    bottomView = spacerViews[0]
+                case .Vertical:
+                    topView = spacerViews[0]
+                    bottomView = spacerViews[0]
                 }
             }
         }
@@ -531,10 +527,8 @@ public class TZStackView: UIView {
             if alignment == .Center {
                 constraints.append(constraint(item: firstItem, attribute: .CenterY, toItem: arrangedSubviews.first!))
             }
-            if #available(iOS 8.0, *) {
-                if alignment == .FirstBaseline {
-                    constraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, constant: 0, priority: 49))
-                }
+            if alignment == .FirstBaseline {
+                constraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, constant: 0, priority: 49))
             }
         case .Vertical:
             if let firstView = firstView {
