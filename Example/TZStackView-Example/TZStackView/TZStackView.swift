@@ -76,11 +76,11 @@ public class TZStackView: UIView {
     }
     
     private func registerHiddenListeners(previousArrangedSubviews: [UIView]) {
-        previousArrangedSubviews.map {[weak self] in
+        previousArrangedSubviews.forEach {[weak self] in
             self?.removeHiddenListener($0)
         }
 
-        arrangedSubviews.map {[weak self] in
+        arrangedSubviews.forEach {[weak self] in
             self?.addHiddenListener($0)
         }
     }
