@@ -9,6 +9,8 @@
 import Foundation
 import XCTest
 
+import TZStackView
+
 func delay(delay:Double, closure:()->()) {
     dispatch_after(
         dispatch_time(
@@ -17,7 +19,6 @@ func delay(delay:Double, closure:()->()) {
         ), dispatch_get_main_queue(), closure)
 }
 
-@available(iOS 9.0, *)
 class TZStackViewTestCase: XCTestCase {
     
     var uiStackView: UIStackView!
@@ -189,5 +190,30 @@ class TZStackViewTestCase: XCTestCase {
             return true
         }
         return false
+    }
+
+    func assertSameOrder(uiTestViews: [TestView], _ tzTestViews: [TestView]) {
+        for (index, uiTestView) in uiTestViews.enumerate() {
+            let tzTestView = tzTestViews[index]
+
+            let result = uiTestView.index == tzTestView.index
+
+            XCTAssertTrue(result, "Views at index \(index) do not match\n== EXPECTED ==\n\(uiTestView.description)\n\n== ACTUAL ==\n\(tzTestView.description)\n\n")
+        }
+    }
+
+    func verifyArrangedSubviewConsistency() {
+        XCTAssertEqual(uiStackView.arrangedSubviews.count, tzStackView.arrangedSubviews.count, "Number of arranged subviews")
+
+        let uiArrangedSubviews = uiStackView.arrangedSubviews as! [TestView]
+        let tzArrangedSubviews = tzStackView.arrangedSubviews as! [TestView]
+
+        assertSameOrder(uiArrangedSubviews, tzArrangedSubviews)
+
+        for tzTestView in tzArrangedSubviews {
+            let result = tzStackView.subviews.contains(tzTestView)
+
+            XCTAssertTrue(result, "\(tzTestView.description) is in arranged subviews but is not actually a subview")
+        }
     }
 }

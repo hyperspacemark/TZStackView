@@ -9,7 +9,8 @@
 import UIKit
 import XCTest
 
-@available(iOS 9.0, *)
+import TZStackView
+
 class TZStackViewTests: TZStackViewTestCase {
     
     override func createTestViews() -> [UIView] {
@@ -953,6 +954,7 @@ class TZStackViewTests: TZStackViewTestCase {
         tzStackView.spacing = 10
         
         verifyConstraints()
+        logAllConstraints()
     }
     
     func testFirstBaselineVerticalFill() {
@@ -1010,144 +1012,46 @@ class TZStackViewTests: TZStackViewTestCase {
         
         verifyConstraints()
     }
-    
-    func testLastBaselineHorizontalFillEqually() {
-        uiStackView.axis = .Horizontal
-        uiStackView.distribution = .FillEqually
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Horizontal
-        tzStackView.distribution = .FillEqually
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
-    }
-    
-    func testLastBaselineHorizontalFill() {
-        uiStackView.axis = .Horizontal
-        uiStackView.distribution = .Fill
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Horizontal
-        tzStackView.distribution = .Fill
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
-    }
-    
-    func testLastBaselineHorizontalFillProportionally() {
-        uiStackView.axis = .Horizontal
-        uiStackView.distribution = .FillProportionally
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Horizontal
-        tzStackView.distribution = .FillProportionally
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
-    }
-    
-    func testLastBaselineHorizontalEqualSpacing() {
-        uiStackView.axis = .Horizontal
-        uiStackView.distribution = .EqualSpacing
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Horizontal
-        tzStackView.distribution = .EqualSpacing
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
-    }
-    
-    func testLastBaselineHorizontalEqualCentering() {
-        uiStackView.axis = .Horizontal
-        uiStackView.distribution = .EqualCentering
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Horizontal
-        tzStackView.distribution = .EqualCentering
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
+
+    // MARK: - Maintaining Consistency Between the Arranged Views and Subviews
+    // https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UIStackView_Class_Reference/#//apple_ref/doc/uid/TP40015256-CH1-SW29
+    func testConsistencyWhenAddingArrangedSubview() {
+        let uiTestView = TestView(index: -1, size: CGSize(width: 100, height: 100))
+        uiStackView.addArrangedSubview(uiTestView)
+
+        let tzTestView = TestView(index: -1, size: CGSize(width: 100, height: 100))
+        tzStackView.addArrangedSubview(tzTestView)
+
+        verifyArrangedSubviewConsistency()
     }
 
-    func testLastBaselineVerticalFillEqually() {
-        uiStackView.axis = .Vertical
-        uiStackView.distribution = .FillEqually
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Vertical
-        tzStackView.distribution = .FillEqually
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
+    func testConsistencyWhenInsertingArrangedSubview() {
+        let uiTestView = TestView(index: -1, size: CGSize(width: 100, height: 100))
+        uiStackView.insertArrangedSubview(uiTestView, atIndex: 0)
+
+        let tzTestView = TestView(index: -1, size: CGSize(width: 100, height: 100))
+        tzStackView.insertArrangedSubview(tzTestView, atIndex: 0)
+
+        verifyArrangedSubviewConsistency()
     }
-    
-    func testLastBaselineVerticalFill() {
-        uiStackView.axis = .Vertical
-        uiStackView.distribution = .Fill
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Vertical
-        tzStackView.distribution = .Fill
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
+
+    func testConsistencyWhenRemovingArrangedSubview() {
+        let uiTestView = uiStackView.arrangedSubviews.last
+        uiStackView.removeArrangedSubview(uiTestView!)
+
+        let tzTestView = tzStackView.arrangedSubviews.last
+        tzStackView.removeArrangedSubview(tzTestView!)
+
+        verifyArrangedSubviewConsistency()
     }
-    
-    func testLastBaselineVerticalFillProportionally() {
-        uiStackView.axis = .Vertical
-        uiStackView.distribution = .FillProportionally
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Vertical
-        tzStackView.distribution = .FillProportionally
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
-    }
-    
-    func testLastBaselineVerticalEqualSpacing() {
-        uiStackView.axis = .Vertical
-        uiStackView.distribution = .EqualSpacing
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Vertical
-        tzStackView.distribution = .EqualSpacing
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
-    }
-    
-    func testLastBaselineVerticalEqualCentering() {
-        uiStackView.axis = .Vertical
-        uiStackView.distribution = .EqualCentering
-        uiStackView.alignment = .LastBaseline
-        tzStackView.axis = .Vertical
-        tzStackView.distribution = .EqualCentering
-        tzStackView.alignment = .LastBaseline
-        
-        uiStackView.spacing = 10
-        tzStackView.spacing = 10
-        
-        verifyConstraints()
+
+    func testConsistencyWhenRemovingSubview() {
+        let uiTestView = uiStackView.arrangedSubviews.last
+        uiTestView!.removeFromSuperview()
+
+        let tzTestView = tzStackView.arrangedSubviews.last
+        tzTestView!.removeFromSuperview()
+
+        verifyArrangedSubviewConsistency()
     }
 }

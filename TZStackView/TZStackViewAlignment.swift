@@ -6,7 +6,9 @@
 //  Copyright © 2015 Tom van Zummeren. All rights reserved.
 //
 
-public enum TZStackViewAlignment {
+import Foundation
+
+@objc public enum TZStackViewAlignment: Int {
     case Fill
     case Center
     case Leading

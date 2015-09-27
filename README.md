@@ -7,9 +7,9 @@ A wonderful layout component called the [`UIStackView` was introduced with *iOS 
 - ✅ Compatible with **iOS 7.x** and **iOS 8.x**
 - ✅ Supports the complete API of `UIStackView` including **all** *distribution* and *alignment* options
 - ✅ Supports animating the `hidden` property of the *arranged subviews*
-- ❌ Does not support *Storyboard*
+- ❌ Supports *Storyboard*
 
-This implementation is meant for iOS developers who, like me, want to use the `UIStackView` in our existing apps and like to layout their components in code as opposed to using *Storyboard*.
+So this implementation does **not** support Storyboard. It is meant for iOS developers who, like me, want to use the `UIStackView` in our existing apps and like to layout their components in code as opposed to using *Storyboard*.
 
 ## Setup
 You basically have two options to include the `TZStackView` in your *Xcode* project:
@@ -21,7 +21,7 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, "8.0"
 use_frameworks!
 
-pod "TZStackView", "1.0.3"
+pod "TZStackView", "1.1.2"
 ```
 Unfortunately, using Cocoapods with a Swift pod requires iOS 8.
 

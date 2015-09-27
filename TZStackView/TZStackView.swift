@@ -19,8 +19,6 @@ func ==(lhs: TZAnimationDidStopQueueEntry, rhs: TZAnimationDidStopQueueEntry) ->
 
 public class TZStackView: UIView {
 
-    private var kvoContext = UInt8()
-
     public var distribution: TZStackViewDistribution = .Fill {
         didSet {
             setNeedsUpdateConstraints()
@@ -37,18 +35,20 @@ public class TZStackView: UIView {
 
     public var spacing: CGFloat = 0
     
-    var layoutMarginsRelativeArrangement = false
+    public var layoutMarginsRelativeArrangement = false
 
-    private var stackViewConstraints = [NSLayoutConstraint]()
-    private var subviewConstraints = [NSLayoutConstraint]()
-
-    private(set) var arrangedSubviews: [UIView] = [] {
+    public private(set) var arrangedSubviews: [UIView] = [] {
         didSet {
             setNeedsUpdateConstraints()
             registerHiddenListeners(oldValue)
         }
     }
-    
+
+    private var kvoContext = UInt8()
+
+    private var stackViewConstraints = [NSLayoutConstraint]()
+    private var subviewConstraints = [NSLayoutConstraint]()
+
     private var spacerViews = [UIView]()
     
     private var animationDidStopQueueEntries = [TZAnimationDidStopQueueEntry]()
@@ -69,19 +69,17 @@ public class TZStackView: UIView {
     }
     
     deinit {
-        // This removes `hidden` value KVO observers
-        for view in arrangedSubviews {
-            removeHiddenListener(view)
-        }
+        // This removes `hidden` value KVO observers using didSet()
+        { self.arrangedSubviews = [] }()
     }
     
     private func registerHiddenListeners(previousArrangedSubviews: [UIView]) {
-        previousArrangedSubviews.forEach {[weak self] in
-            self?.removeHiddenListener($0)
+        for subview in previousArrangedSubviews {
+            self.removeHiddenListener(subview)
         }
 
-        arrangedSubviews.forEach {[weak self] in
-            self?.addHiddenListener($0)
+        for subview in arrangedSubviews {
+            self.addHiddenListener(subview)
         }
     }
     
@@ -97,14 +95,13 @@ public class TZStackView: UIView {
         }
     }
 
-    override public func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
-        if let view = object as? UIView where keyPath == "hidden" {
+    public override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+        if let view = object as? UIView, change = change where keyPath == "hidden" {
             let hidden = view.hidden
             let previousValue = (change?[NSKeyValueChangeOldKey] as? Bool) ?? false
             if hidden == previousValue {
                 return
             }
-
             if hidden {
                 animatingToHiddenViews.append(view)
             }
@@ -163,7 +160,13 @@ public class TZStackView: UIView {
     }
 
     public func insertArrangedSubview(view: UIView, atIndex stackIndex: Int) {
+        view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(view)
         arrangedSubviews.insert(view, atIndex: stackIndex)
+    }
+
+    override public func willRemoveSubview(subview: UIView) {
+        removeArrangedSubview(subview)
     }
 
     override public func updateConstraints() {
@@ -219,6 +222,10 @@ public class TZStackView: UIView {
                 stackViewConstraints += createMatchEdgesContraints(arrangedSubviews)
                 stackViewConstraints += createFirstAndLastViewMatchEdgesContraints()
                 
+                if alignment == .FirstBaseline && axis == .Horizontal {
+                    stackViewConstraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, priority: 49))
+                }
+
                 if distribution == .FillEqually {
                     stackViewConstraints += createFillEquallyConstraints(arrangedSubviews)
                 }
@@ -246,6 +253,16 @@ public class TZStackView: UIView {
                 
                 stackViewConstraints += createMatchEdgesContraints(arrangedSubviews)
                 stackViewConstraints += createFirstAndLastViewMatchEdgesContraints()
+                
+                switch axis {
+                case .Horizontal:
+                    stackViewConstraints.append(constraint(item: self, attribute: .Width, toItem: nil, attribute: .NotAnAttribute, priority: 49))
+                    if alignment == .FirstBaseline {
+                        stackViewConstraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, priority: 49))
+                    }
+                case .Vertical:
+                    stackViewConstraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, priority: 49))
+                }
 
                 stackViewConstraints += createFillConstraints(views, constant: 0)
                 stackViewConstraints += createFillEquallyConstraints(spacerViews)
@@ -262,6 +279,16 @@ public class TZStackView: UIView {
                 
                 stackViewConstraints += createMatchEdgesContraints(arrangedSubviews)
                 stackViewConstraints += createFirstAndLastViewMatchEdgesContraints()
+                
+                switch axis {
+                case .Horizontal:
+                    stackViewConstraints.append(constraint(item: self, attribute: .Width, toItem: nil, attribute: .NotAnAttribute, priority: 49))
+                    if alignment == .FirstBaseline {
+                        stackViewConstraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, priority: 49))
+                    }
+                case .Vertical:
+                    stackViewConstraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, priority: 49))
+                }
 
                 var previousArrangedSubview: UIView?
                 for (index, arrangedSubview) in visibleArrangedSubviews.enumerate() {
@@ -290,10 +317,10 @@ public class TZStackView: UIView {
 
             if layoutMarginsRelativeArrangement {
                 if spacerViews.count > 0 {
-                    stackViewConstraints.append(constraint(item: self, attribute: .Bottom, toItem: spacerViews[0]))
-                    stackViewConstraints.append(constraint(item: self, attribute: .Left, toItem: spacerViews[0]))
-                    stackViewConstraints.append(constraint(item: self, attribute: .Right, toItem: spacerViews[0]))
-                    stackViewConstraints.append(constraint(item: self, attribute: .Top, toItem: spacerViews[0]))
+                    stackViewConstraints.append(constraint(item: self, attribute: .BottomMargin, toItem: spacerViews[0]))
+                    stackViewConstraints.append(constraint(item: self, attribute: .LeftMargin, toItem: spacerViews[0]))
+                    stackViewConstraints.append(constraint(item: self, attribute: .RightMargin, toItem: spacerViews[0]))
+                    stackViewConstraints.append(constraint(item: self, attribute: .TopMargin, toItem: spacerViews[0]))
                 }
             }
             addConstraints(stackViewConstraints)
@@ -303,7 +330,7 @@ public class TZStackView: UIView {
     }
 
     required public init(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: aDecoder)!
     }
     
     private func addSpacerView() -> TZSpacerView {
@@ -526,9 +553,6 @@ public class TZStackView: UIView {
 
             if alignment == .Center {
                 constraints.append(constraint(item: firstItem, attribute: .CenterY, toItem: arrangedSubviews.first!))
-            }
-            if alignment == .FirstBaseline {
-                constraints.append(constraint(item: self, attribute: .Height, toItem: nil, attribute: .NotAnAttribute, constant: 0, priority: 49))
             }
         case .Vertical:
             if let firstView = firstView {
